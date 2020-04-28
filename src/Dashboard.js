@@ -9,6 +9,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import Chip from "@material-ui/core/Chip";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
+import {CTX} from './Store'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -40,20 +41,27 @@ const useStyles = makeStyles(theme => ({
 const Dashboard = () => {
   const classes = useStyles();
 
-  const [textValue, changeTextValue] = React.useState('')
+  //CTX store
+  const [allChats] = React.useContext(CTX)
+  console.log({allChats})
+  const topics = Object.keys(allChats)
 
+  //local state
+  const [activeTopic, changeActiveTopic] = React.useState(topics[0])
+  const [textValue, changeTextValue] = React.useState('')
+  
   return (
     <div>
       <Paper className={classes.root}>
         <Typography variant="h3" component="h3">
           DEWSY chat
         </Typography>
-        <Typography component="p">topic placeholder</Typography>
+        <Typography component="p">{activeTopic}</Typography>
         <div className={classes.flex}>
           <div className={classes.topicsWindow}>
             <List component="nav" aria-label="main mailbox folders">
-              {["a topic"].map(topic => (
-                <ListItem key={topic} button>
+              {topics.map(topic => (
+                <ListItem onClick={e => changeActiveTopic(e.target.innerText)} key={topic} button>
                   <ListItemIcon></ListItemIcon>
                   <ListItemText primary={topic}></ListItemText>
                 </ListItem>
@@ -61,10 +69,10 @@ const Dashboard = () => {
             </List>
           </div>
           <div className={classes.chatWindow}>
-            {[{ user: "chris user", msg: "hello there" }].map((chat, i) => (
+            {allChats[activeTopic].map((chat, i) => (
               <div className={classes.flex}>
-                <Chip label={chat.user} className={classes.chip} />
-                <Typography component="p">{chat.msg}</Typography>
+                <Chip label={chat.from} className={classes.chip} />
+                <Typography component="p" gutterBottom>{chat.msg}</Typography>
               </div>
             ))}
           </div>
