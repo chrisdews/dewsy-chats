@@ -9,7 +9,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import Chip from "@material-ui/core/Chip";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
-import {CTX} from './Store'
+import { CTX } from "./Store";
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -42,14 +42,13 @@ const Dashboard = () => {
   const classes = useStyles();
 
   //CTX store
-  const [allChats] = React.useContext(CTX)
-  console.log({allChats})
-  const topics = Object.keys(allChats)
+  const { state, sendChatAction, user } = React.useContext(CTX);
+  const topics = Object.keys(state);
 
   //local state
-  const [activeTopic, changeActiveTopic] = React.useState(topics[0])
-  const [textValue, changeTextValue] = React.useState('')
-  
+  const [activeTopic, changeActiveTopic] = React.useState(topics[0]);
+  const [textValue, changeTextValue] = React.useState("");
+
   return (
     <div>
       <Paper className={classes.root}>
@@ -61,7 +60,11 @@ const Dashboard = () => {
           <div className={classes.topicsWindow}>
             <List component="nav" aria-label="main mailbox folders">
               {topics.map(topic => (
-                <ListItem onClick={e => changeActiveTopic(e.target.innerText)} key={topic} button>
+                <ListItem
+                  onClick={e => changeActiveTopic(e.target.innerText)}
+                  key={topic}
+                  button
+                >
                   <ListItemIcon></ListItemIcon>
                   <ListItemText primary={topic}></ListItemText>
                 </ListItem>
@@ -69,11 +72,16 @@ const Dashboard = () => {
             </List>
           </div>
           <div className={classes.chatWindow}>
-            {allChats[activeTopic].map((chat, i) => (
+            {state[activeTopic].map((chat, i) => (
+               <>
+                {console.log(chat)}
               <div className={classes.flex}>
                 <Chip label={chat.from} className={classes.chip} />
-                <Typography component="p" gutterBottom>{chat.msg}</Typography>
+                <Typography component="p" gutterBottom>
+                  {chat.msg}
+                </Typography>
               </div>
+              </>
             ))}
           </div>
         </div>
@@ -84,11 +92,18 @@ const Dashboard = () => {
             label="Send a message..."
             className={classes.chatBox}
             value={textValue}
-            onChange={(e) => changeTextValue(e.target.value)}
-
+            onChange={e => changeTextValue(e.target.value)}
           />
 
-          <Button variant="contained" color="primary" className={classes.button}>
+          <Button
+            variant="contained"
+            color="primary"
+            className={classes.button}
+            onClick={() => {
+              sendChatAction({msg: textValue, from: user, topic: activeTopic});
+              changeTextValue("");
+            }}
+          >
             Send
           </Button>
         </div>
