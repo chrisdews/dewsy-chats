@@ -11,41 +11,46 @@ const initState = {
   topic2: [{ from: "obi", msg: "hello there" }]
 };
 
-const reducer = (state, action) => {
-  console.log(action.payload);
+const reducer = (allChats, action) => {
+  console.log('action.payload', action.payload);
   const { from, msg, topic } = action.payload;
 
   switch (action.type) {
     case "RECEIVE_MESSAGE":
       return {
-        ...state,
-        [topic]: [...state[topic], { from, msg }]
+        ...allChats,
+        [topic]: [...allChats[topic], { from, msg }]
       };
     default:
-      return state;
+      return allChats;
   }
 };
 
 let socket;
 
 const sendChatAction = (value) => {
-  socket.emit("chat message", value);
+    console.log('value from sendChatAction - store', value)
+ if (!socket)
+{
+    socket = io(':3001')
+  socket.emit("chat message", value);  
+}   
 };
 
 const Store = props => {
-  const [state, dispatch] = React.useReducer(reducer, initState);
+  const [allChats, dispatch] = React.useReducer(reducer, initState);
 
-  if (!socket) {
-    socket = io(":3001");
-    socket.on("chat message", msg => {
-      dispatch({ type: "RECEIVE_MESSAGE", payload: msg });
-    });
-  }
+//   if (!socket) {
+//     socket = io(":3001");
+//     socket.on("chat message", msg => {
+//         console.log('on message ----', msg)
+//       dispatch({ type: "RECEIVE_MESSAGE", payload: msg });
+//     });
+//   }
   const randNum = Math.random(100) * 100;
   const user = "new_user_" + randNum.toFixed(0);
   return (
-    <CTX.Provider value={{ state, sendChatAction, user }}>
-    {console.log(state)}
+    <CTX.Provider value={{ allChats, sendChatAction, user, dispatch }}>
       {props.children}
     </CTX.Provider>
   );

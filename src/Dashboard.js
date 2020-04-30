@@ -9,6 +9,8 @@ import ListItemText from "@material-ui/core/ListItemText";
 import Chip from "@material-ui/core/Chip";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
+import io from "socket.io-client";
+
 import { CTX } from "./Store";
 
 const useStyles = makeStyles(theme => ({
@@ -42,13 +44,34 @@ const Dashboard = () => {
   const classes = useStyles();
 
   //CTX store
-  const { state, sendChatAction, user } = React.useContext(CTX);
-  const topics = Object.keys(state);
+  const { allChats, sendChatAction, user, dispatch, reducer } = React.useContext(
+    CTX
+  );
+  const topics = Object.keys(allChats);
 
   //local state
   const [activeTopic, changeActiveTopic] = React.useState(topics[0]);
   const [textValue, changeTextValue] = React.useState("");
+  
+  let socket;
+  if (!socket) {
+    socket = io(":3001");
+    socket.on("chat message", msg => {
+      console.log("on message ----", msg);
+      dispatch({ type: "RECEIVE_MESSAGE", payload: msg });
+    });
+  }
 
+  const clickHandler = () => {
+    console.log("hi from clikc");
+    dispatch({
+      type: "RECEIVE_MESSAGE",
+      payload: { msg: textValue, from: user, topic: activeTopic }
+    });
+
+    sendChatAction({ msg: textValue, from: user, topic: activeTopic });
+    changeTextValue("");
+  };
   return (
     <div>
       <Paper className={classes.root}>
@@ -72,15 +95,14 @@ const Dashboard = () => {
             </List>
           </div>
           <div className={classes.chatWindow}>
-            {state[activeTopic].map((chat, i) => (
-               <>
-                {console.log(chat)}
-              <div className={classes.flex}>
-                <Chip label={chat.from} className={classes.chip} />
-                <Typography component="p" gutterBottom>
-                  {chat.msg}
-                </Typography>
-              </div>
+            {allChats[activeTopic].map((chat, i) => (
+              <>
+                <div className={classes.flex}>
+                  <Chip label={chat.from} className={classes.chip} />
+                  <Typography component="p" gutterBottom>
+                    {chat.msg}
+                  </Typography>
+                </div>
               </>
             ))}
           </div>
@@ -99,10 +121,7 @@ const Dashboard = () => {
             variant="contained"
             color="primary"
             className={classes.button}
-            onClick={() => {
-              sendChatAction({msg: textValue, from: user, topic: activeTopic});
-              changeTextValue("");
-            }}
+            onClick={clickHandler}
           >
             Send
           </Button>

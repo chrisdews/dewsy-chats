@@ -9,10 +9,16 @@ app.get('/', function(req,res){
 
 io.on('connection', (socket) => {
     console.log('a user connected');
+
+    socket.on('disconnect', () => {
+        console.log('user disconnected');
+      });
+      
     socket.on('chat message', (msg) => {
         console.log('message: ' + JSON.stringify(msg))
         io.emit('chat message', msg);
     })
+    
   });
 
 http.listen(3001, () => {console.log('listening on port 3001')})
