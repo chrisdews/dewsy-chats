@@ -53,21 +53,21 @@ const Dashboard = () => {
   const [activeTopic, changeActiveTopic] = React.useState(topics[0]);
   const [textValue, changeTextValue] = React.useState("");
   
-  let socket;
-  if (!socket) {
-    socket = io(":3001");
-    socket.on("chat message", msg => {
-      console.log("on message ----", msg);
-      dispatch({ type: "RECEIVE_MESSAGE", payload: msg });
-    });
-  }
+//   let socket;
+//   if (!socket) {
+//     socket = io(":3001");
+//     socket.on("chat message", msg => {
+//       console.log("on message ----", msg);
+//       dispatch({ type: "RECEIVE_MESSAGE", payload: msg });
+//     });
+//   }
 
   const clickHandler = () => {
     console.log("hi from clikc");
-    dispatch({
-      type: "RECEIVE_MESSAGE",
-      payload: { msg: textValue, from: user, topic: activeTopic }
-    });
+    // dispatch({
+    //   type: "RECEIVE_MESSAGE",
+    //   payload: { msg: textValue, from: user, topic: activeTopic }
+    // });
 
     sendChatAction({ msg: textValue, from: user, topic: activeTopic });
     changeTextValue("");

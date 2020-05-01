@@ -19,7 +19,11 @@ io.on('connection', (socket) => {
         io.emit('chat message', msg);
     })
     
+  //   socket.on('end', function (){
+  //     socket.disconnect(0);
+  // });
   });
+
 
 http.listen(3001, () => {console.log('listening on port 3001')})
 
