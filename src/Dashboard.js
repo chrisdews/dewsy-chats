@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
@@ -11,7 +11,7 @@ import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import io from "socket.io-client";
 
-import { CTX } from "./Store";
+// import { CTX } from "./Store";
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -40,27 +40,53 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
+const initState = {
+  general: [
+    { from: "dewsy", msg: "welcome" },
+    { from: "donald", msg: "drink bleach" }
+  ],
+  topic2: [{ from: "obi", msg: "hello there" }]
+};
+
 const Dashboard = () => {
+  const [allChats, updateAllChats] = useState(initState);
+
+  useEffect(() => {
+    let socket = io(":3001");
+    socket.on("chat message", ({topic, msg, from}) => {
+        // console.log(data)
+    //   addNewChat(data);
+      updateAllChats({...allChats,
+        [topic]: [...allChats[topic], { msg, from}]})
+
+    });
+    return () => {
+      socket.off("chat message");
+    };
+  }, [allChats]);
+
+
   const classes = useStyles();
 
-  //CTX store
-  const { allChats, sendChatAction, user, dispatch, reducer } = React.useContext(
-    CTX
-  );
+
   const topics = Object.keys(allChats);
 
   //local state
-  const [activeTopic, changeActiveTopic] = React.useState(topics[0]);
-  const [textValue, changeTextValue] = React.useState("");
-  
-//   let socket;
-//   if (!socket) {
-//     socket = io(":3001");
-//     socket.on("chat message", msg => {
-//       console.log("on message ----", msg);
-//       dispatch({ type: "RECEIVE_MESSAGE", payload: msg });
-//     });
-//   }
+  const [activeTopic, changeActiveTopic] = useState(topics[0]);
+  const [textValue, changeTextValue] = useState("");
+
+//   const addNewChat = ({topic, msg, from}) => {
+//     console.log(topic, msg, from);
+//     return {
+//       ...allChats,
+//       [topic]: [...allChats[topic], { msg, user }]
+//     };
+//   };
+
+  const sendChatAction = value => {
+    let socket = io(":3001");
+    socket.emit("chat message", value);
+  };
 
   const clickHandler = () => {
     console.log("hi from clikc");
@@ -68,10 +94,14 @@ const Dashboard = () => {
     //   type: "RECEIVE_MESSAGE",
     //   payload: { msg: textValue, from: user, topic: activeTopic }
     // });
-
+    
     sendChatAction({ msg: textValue, from: user, topic: activeTopic });
     changeTextValue("");
   };
+
+  const randNum = Math.random(100) * 100;
+  const user = "new_user_" + randNum.toFixed(0);
+
   return (
     <div>
       <Paper className={classes.root}>
