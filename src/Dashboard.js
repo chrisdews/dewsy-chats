@@ -9,6 +9,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import Chip from "@material-ui/core/Chip";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
+
 import io from "socket.io-client";
 
 // import { CTX } from "./Store";
@@ -33,7 +34,12 @@ const useStyles = makeStyles(theme => ({
     padding: "20px"
   },
   chatBox: {
-    width: "85%"
+    width: "65%"
+  },
+  nameBox:{
+      width: "20%",
+     minWidth: "100px"
+
   },
   button: {
     width: "15%"
@@ -51,56 +57,45 @@ const initState = {
 const Dashboard = () => {
   const [allChats, updateAllChats] = useState(initState);
 
+  let socket = io(":3001");
   useEffect(() => {
-    let socket = io(":3001");
-    socket.on("chat message", ({topic, msg, from}) => {
-        // console.log(data)
-    //   addNewChat(data);
-      updateAllChats({...allChats,
-        [topic]: [...allChats[topic], { msg, from}]})
-
+    socket.on("chat message", ({ topic, msg, from }) => {
+      // console.log(data)
+      //   addNewChat(data);
+      updateAllChats({
+        ...allChats,
+        [topic]: [...allChats[topic], { msg, from }]
+      });
     });
     return () => {
       socket.off("chat message");
     };
   }, [allChats]);
 
-
   const classes = useStyles();
-
 
   const topics = Object.keys(allChats);
 
   //local state
   const [activeTopic, changeActiveTopic] = useState(topics[0]);
   const [textValue, changeTextValue] = useState("");
-
-//   const addNewChat = ({topic, msg, from}) => {
-//     console.log(topic, msg, from);
-//     return {
-//       ...allChats,
-//       [topic]: [...allChats[topic], { msg, user }]
-//     };
-//   };
+  const [nameTextValue, changeNameTextValue] = useState("");
 
   const sendChatAction = value => {
-    let socket = io(":3001");
+    // let socket = io(":3001");
     socket.emit("chat message", value);
   };
 
   const clickHandler = () => {
-    console.log("hi from clikc");
-    // dispatch({
-    //   type: "RECEIVE_MESSAGE",
-    //   payload: { msg: textValue, from: user, topic: activeTopic }
-    // });
-    
-    sendChatAction({ msg: textValue, from: user, topic: activeTopic });
+    sendChatAction({ msg: textValue, from: nameTextValue, topic: activeTopic });
     changeTextValue("");
   };
 
   const randNum = Math.random(100) * 100;
   const user = "new_user_" + randNum.toFixed(0);
+
+  const helperText = nameTextValue ? 'smells terrible' : 'this is very important'
+
 
   return (
     <div>
@@ -139,6 +134,15 @@ const Dashboard = () => {
         </div>
 
         <div className={classes.flex}>
+          <TextField
+            id="outlined-basic"
+            label="What's your name?"
+            variant="outlined"
+            className={classes.nameBox}
+            value={nameTextValue}
+            onChange={e => changeNameTextValue(e.target.value)}
+            helperText={helperText}
+          />
           <TextField
             id="standard-name"
             label="Send a message..."
